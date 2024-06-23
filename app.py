@@ -3,6 +3,7 @@ import sqlalchemy as sa
 import numpy as np
 from bokeh.plotting import figure, show
 from bokeh.io import output_file
+from bokeh.palettes import Category20
 
 
 class DatabaseError(Exception):
@@ -117,21 +118,32 @@ class DataVisualizer(DataProcessor):
         df_mapped = pd.read_sql('SELECT * FROM mapped_test_data', self.engine)
 
         output_file("visualization.html")
-        p = figure(title="Data Visualization", x_axis_label='x', y_axis_label='y')
+        p = figure(
+            title="Data Visualization",
+            x_axis_label='x', y_axis_label='y',
+            width=2000, height=2000
+        )
+
+        # Define a palette of colors
+        colors = Category20[20]  # Use the Category20 palette for variety
 
         # Plot training data
-        for col in df_train.columns[1:]:
-            p.line(df_train['x'], df_train[col], legend_label=f"Train {col}", line_width=2)
+        for i, col in enumerate(df_train.columns[1:], start=0):
+            p.line(df_train['x'], df_train[col], legend_label=f"Train {col}", line_width=2,
+                   line_color=colors[i % len(colors)])
 
         # Plot ideal functions
-        for func in best_functions:
-            p.line(df_ideal['x'], df_ideal[func], legend_label=f"Ideal {func}", line_width=2, line_dash='dashed')
+        for i, func in enumerate(best_functions, start=len(df_train.columns) - 1):
+            p.line(df_ideal['x'], df_ideal[func], legend_label=f"Ideal {func}", line_width=2, line_dash='dashed',
+                   line_color=colors[i % len(colors)])
 
         # Plot test data
-        p.scatter(df_test['x'], df_test['y'], legend_label="Test Data", marker="circle", size=8, fill_color="white")
+        p.scatter(df_test['x'], df_test['y'], legend_label="Test Data", marker="circle", size=8, fill_color="white",
+                  line_color="black")
 
         # Plot mapped data
-        p.scatter(df_mapped['x'], df_mapped['y'], legend_label="Mapped Data", marker="square", size=6, fill_color="red")
+        p.scatter(df_mapped['x'], df_mapped['y'], legend_label="Mapped Data", marker="square", size=6, fill_color="red",
+                  line_color="black")
 
         show(p)
 
