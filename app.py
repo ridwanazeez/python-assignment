@@ -11,10 +11,12 @@ ideal_functions = pd.read_csv("datasets/ideal.csv")
 
 # Create SQLite database
 engine = sa.create_engine("sqlite:///data.db")
-# conn = engine.connect()
 
 
 def load_data_to_db():
+    """
+    Load training data, ideal functions, and test data into the SQLite database.
+    """
     # Load training data into database
     training_data.to_sql("training_data", engine, if_exists="replace", index=False)
 
@@ -32,6 +34,15 @@ load_data_to_db()
 
 
 def choose_ideal_functions(engine):
+    """
+    Choose the four ideal functions from the database based on the Least Squares criterion.
+
+    Args:
+        engine (sqlalchemy.engine.Engine): The SQLite database engine.
+
+    Returns:
+        list: A list of the four best functions from the ideal functions dataset.
+    """
     # Read the training and ideal functions from the database
     df_train = pd.read_sql("SELECT * FROM training_data", engine)
     df_ideal = pd.read_sql("SELECT * FROM ideal_functions", engine)
@@ -55,7 +66,16 @@ print("Best functions:", best_functions)
 
 
 def map_test_data(engine, best_functions):
+    """
+    Map test data to the chosen ideal functions based on the deviation criterion.
 
+    Args:
+        engine (sqlalchemy.engine.Engine): The SQLite database engine.
+        best_functions (list): A list of the four best functions from the ideal functions dataset.
+
+    Returns:
+        pandas.DataFrame: A DataFrame containing the test data mapped to the chosen ideal functions.
+    """
     df_test = pd.read_sql("SELECT * FROM test_data", engine)
     df_ideal = pd.read_sql("SELECT * FROM ideal_functions", engine)
 
@@ -86,6 +106,13 @@ print(mapped_data)
 
 
 def visualize_data(engine, best_functions):
+    """
+    Visualize the training data, ideal functions, test data, and mapped test data using Bokeh.
+
+    Args:
+        engine (sqlalchemy.engine.Engine): The SQLite database engine.
+        best_functions (list): A list of the four best functions from the ideal functions dataset.
+    """
     df_train = pd.read_sql('SELECT * FROM training_data', engine)
     df_ideal = pd.read_sql('SELECT * FROM ideal_functions', engine)
     df_test = pd.read_sql('SELECT * FROM test_data', engine)
